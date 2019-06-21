@@ -24,9 +24,13 @@ const camera = new BABYLON.ArcRotateCamera(
     "camera",
     Math.PI / 2,
     Math.PI / 3.2,
-    10000,
+    30000,
     new BABYLON.Vector3(4000,200,1000),
     scene);
+
+    camera.maxZ = 1000000;
+
+    camera.wheelDeltaPercentage = 0.02;
 
 camera.attachControl(view);
 
@@ -43,9 +47,9 @@ mesh.material = material;
 
 var bimMet = new BABYLON.StandardMaterial("bimMet", scene);3
 
-bimMet.diffuseColor = new BABYLON.Color3(1, 0, 1);
+bimMet.diffuseColor = new BABYLON.Color3(0.5, 0, 1);
 bimMet.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-bimMet.emissiveColor = new BABYLON.Color3(1, 0, 1);
+bimMet.emissiveColor = new BABYLON.Color3(0.5, 0, 1);
 // bimMet.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
 
 bimMet.backFaceCulling = false;
@@ -54,7 +58,7 @@ bimMet.backFaceCulling = false;
 
 BABYLON.SceneLoader.LoadAssetContainer(
   "models/",
-  "11.wexbim",
+  "LakesideRestaurant.wexbim",
   this.scene,
   container => {
 

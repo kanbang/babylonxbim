@@ -92,7 +92,7 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
         geometry.onerror = function (msg) {
             //viewer.error(msg);
         }
-        geometry.load(data, null);
+        geometry.load(data);
 
 
 /*
