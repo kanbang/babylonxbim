@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "skipDefaultLibCheck": true
+    },
+    "include": [
+        "src/**/*.ts",
+      
+    ]
+}
