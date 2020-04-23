@@ -71,10 +71,10 @@ export declare class WexBimShapeMultiInstance implements IWexBimShape {
 export declare class WexBimGeometryModel {
     Shapes: IWexBimShape[];
     Geometry: WexBimMesh;
-    readonly MatrixCount: number;
-    readonly ShapeCount: number;
-    readonly TriangleCount: number;
-    readonly VertexCount: number;
+    get MatrixCount(): number;
+    get ShapeCount(): number;
+    get TriangleCount(): number;
+    get VertexCount(): number;
     static ReadFromStream(reader: BinaryReader): WexBimGeometryModel;
 }
 export declare class WexBimStream {

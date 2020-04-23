@@ -6,7 +6,8 @@
         "declaration": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "skipDefaultLibCheck": true
+        "skipDefaultLibCheck": true,
+        "downlevelIteration":true
     },
     "include": [
         "src/**/*.ts",

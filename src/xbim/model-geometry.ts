@@ -5,8 +5,8 @@ import { ProductType } from "./product-type";
 
 export class ModelGeometry {
     //all this data is to be fed into GPU as attributes
-    normals: Float32Array;
-    indices: Uint16Array;
+    normals: Uint8Array;
+    indices: Uint32Array;
     products: Float32Array;
     transformations: Float32Array;
     styleIndices: Uint16Array;
@@ -68,8 +68,8 @@ export class ModelGeometry {
 
         //create target buffers of correct size (avoid reallocation of memory)
         this.vertices = new Float32Array(square(4, numVertices * 3));
-        this.normals = new Float32Array(numTriangles * 6);
-        this.indices = new Uint16Array(numTriangles * 3);
+        this.normals = new Uint8Array(numTriangles * 6);
+        this.indices = new Uint32Array(numTriangles * 3);
         this.styleIndices = new Uint16Array(numTriangles * 3);
         this.styles = new Uint8Array(square(1, (numStyles + 1) * 4)); //+1 is for a default style
         this.products = new Float32Array(numTriangles * 3);
@@ -147,17 +147,9 @@ export class ModelGeometry {
                 var styleId = br.readInt32();
                 var transformation = null;
 
-                
                 if (repetition > 1) {
                     transformation = version === 1 ? br.readFloat32Array(16) : br.readFloat64Array(16);
-                    
-                    if(iMatrix >= this.matrices.length-16)
-                    {
-                        debugger
-                    }
                     this.matrices.set(transformation, iMatrix);
-
-
                     iMatrix += 16;
                 }
 
@@ -203,6 +195,7 @@ export class ModelGeometry {
                     this.productMaps[shape.pLabel] = map;
                 }
 
+               // debugger
                 this.normals.set(shapeGeom.normals, iIndex * 2);
 
                 //switch spaces and openings off by default 

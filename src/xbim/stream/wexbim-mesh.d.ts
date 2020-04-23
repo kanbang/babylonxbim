@@ -9,13 +9,13 @@ export declare class WexBimMesh {
     private TriangleCountPos;
     private VertexPos;
     constructor(meshData: ArrayBuffer);
-    readonly Version: number;
-    readonly VertexCount: number;
-    readonly TriangleCount: number;
-    readonly FaceCount: number;
-    readonly Length: number;
-    readonly Vertices: Float32Array;
-    readonly Faces: WexBimMeshFace[];
+    get Version(): number;
+    get VertexCount(): number;
+    get TriangleCount(): number;
+    get FaceCount(): number;
+    get Length(): number;
+    get Vertices(): Float32Array;
+    get Faces(): WexBimMeshFace[];
 }
 export declare class WexBimMeshFace {
     private _array;
@@ -24,9 +24,9 @@ export declare class WexBimMeshFace {
     private _readIndex;
     private _sizeofIndex;
     constructor(readIndex: ReadIndex, sizeofIndex: number, array: ArrayBuffer, facesOffset: number);
-    readonly TriangleCount: number;
-    readonly IsPlanar: boolean;
-    readonly Indices: Uint32Array;
-    readonly Normals: Float32Array;
+    get TriangleCount(): number;
+    get IsPlanar(): boolean;
+    get Indices(): Uint32Array;
+    get Normals(): Float32Array;
     private unpackNormal;
 }

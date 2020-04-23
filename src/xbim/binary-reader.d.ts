@@ -14,7 +14,7 @@ export declare class BinaryReader {
     /**
      * Current position
      */
-    readonly Position: number;
+    get Position(): number;
     /**
      * Pass url string, blob, file of byte array to this function to initialize the reader. Only array buffer takes imidiate effect.
      * Othe sources are loaded asynchronously and you need to use 'onloaded' delegate to use the reader only after it is initialized woth the data.

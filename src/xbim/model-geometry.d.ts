@@ -1,8 +1,7 @@
 import { BinaryReader } from "./binary-reader";
-import { State } from "./state";
 import { ProductType } from "./product-type";
 export declare class ModelGeometry {
-    normals: Float32Array;
+    normals: Uint8Array;
     indices: Uint32Array;
     products: Float32Array;
     transformations: Float32Array;
@@ -11,24 +10,15 @@ export declare class ModelGeometry {
     vertices: Float32Array;
     matrices: Float32Array;
     styles: Uint8Array;
-    bbox: Float32Array;
     meter: number;
     productMaps: {
         [id: number]: ProductMap;
     };
-    transparentProductMaps: ProductMap[];
-    productTypeMaps: {
-        [id: number]: ProductMap[];
-    };
     regions: Region[];
     transparentIndex: number;
     productIdLookup: any[];
-    getNormal: (normal1: any, normal2: any) => Float32Array;
-    packNormal: (normal: any) => number[];
-    private getStyleColor;
-    private setStyleColor;
-    parse(binReader: BinaryReader, styleModifier: any): Promise<void>;
-    load(source: any, styleModifier: any): void;
+    parse(binReader: BinaryReader): void;
+    load(source: any): void;
     onloaded: (geometry: ModelGeometry) => void;
     onerror: (message?: string) => void;
 }
@@ -38,8 +28,6 @@ export declare class ProductMap {
     type: ProductType;
     bBox: Float32Array;
     spans: Array<Int32Array>;
-    state: State;
-    hasTransparentShapes: Boolean;
 }
 export declare class Region {
     population: number;
