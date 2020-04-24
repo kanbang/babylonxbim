@@ -1,6 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Tools } from "babylonjs/Misc/tools";
-import { VertexBuffer, VertexData } from "babylonjs";
+import { VertexData, Scene } from "babylonjs";
 import { Skeleton } from "babylonjs/Bones/skeleton";
 import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -10,10 +9,8 @@ import { ISceneLoaderPlugin } from "babylonjs"
 import { ISceneLoaderPluginExtensions } from "babylonjs"
 
 import { AssetContainer } from "babylonjs";
-import { Scene } from "babylonjs/scene";
-
-import { ModelGeometry, Region } from './xbim/model-geometry';
-import { BimScene } from "./BimScene";
+import { ModelGeometry } from './xbim/model-geometry';
+import { BimMesh } from "./BimMesh";
 
 
 
@@ -22,6 +19,13 @@ import { BimScene } from "./BimScene";
  * This is a babylon scene loader plugin.
  */
 
+export class BimAssetContainer extends AssetContainer {
+    public bimmesh: BimMesh;
+
+    constructor(scene: Scene) {
+        super(scene);
+    }
+}
 
 export class XbimFileLoader implements ISceneLoaderPlugin {
 
@@ -39,25 +43,10 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
         ".wexbim": { isBinary: true },
     };
 
-    /**
-     * Import meshes into a scene.
-     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-     * @param scene The scene to import into
-     * @param data The data to import
-     * @param rootUrl The root url for scene and resources
-     * @param meshes The meshes array to import into
-     * @param particleSystems The particle systems array to import into
-     * @param skeletons The skeletons array to import into
-     * @param onError The callback when import fails
-     * @returns True if successful or false otherwise
-     */
-    public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
-        //  face color 
-        //  https://www.babylonjs-playground.com/#ICZEXW#5
 
-        var bimscene = scene as BimScene;
-
+    private loadModelGeometry(scene: Scene, data: any, onloaded: (bimmesh: BimMesh) => void) {
         var geometry = new ModelGeometry();
+
         geometry.onloaded = function () {
 
             var mesh = new Mesh("xbimmesh", scene);
@@ -69,29 +58,19 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
             // mesh.computeWorldMatrix(true);
 
             var vertexData = new VertexData();
-            bimscene.vertex_data = vertexData;
-            bimscene.mesh = mesh;
 
             //Assign positions and indices to vertexData
             vertexData.positions = geometry.vertices;
             vertexData.indices = geometry.indices;
 
-            bimscene.indices_product = geometry.products;
-
-            //测试按products随机颜色
+            ////////////////////////////////////////////////////////////////
+            //测试 按products随机颜色
             vertexData.colors = new Float32Array(geometry.products.length * 4);
 
             var colormap = new Map<number, number[]>();
             for (var i = 0; i < geometry.products.length; ++i) {
                 var index = geometry.indices[i];
                 var pid = Math.floor(geometry.products[i] + 0.5);
-                if (bimscene.map_product_pindexs.has(pid)) {
-                    bimscene.map_product_pindexs.get(pid).add(index);
-                }
-                else {
-                    bimscene.map_product_pindexs.set(pid, new Set([index]));
-                }
-
 
                 if (colormap.has(pid)) {
                     var clr = colormap.get(pid);
@@ -113,13 +92,10 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
                     vertexData.colors[index * 4 + 3] = 0.5;
                 }
             }
+            ////////////////////////////////////////////////////////////////
 
-            // for (var i = 0; i < vertexData.colors.length; ++i) {
-            //     vertexData.colors[i] = 0.7;
-            // }
-            // geometry.products
 
-            // debugger
+            //法线设置
             var normals = [];
             BABYLON.VertexData.ComputeNormals(geometry.vertices, geometry.indices, normals);
             // BABYLON.VertexData._ComputeSides(BABYLON.Mesh.FRONTSIDE, geometry.vertices, geometry.indices, normals, uvs);
@@ -146,16 +122,38 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
             //Apply vertexData to custom mesh
             vertexData.applyToMesh(mesh, true);
 
-            if (meshes) {
-                meshes.push(mesh);
-            }
+
+            let bimmesh = new BimMesh(mesh, vertexData, geometry.products);
+            onloaded(bimmesh);
         };
 
         geometry.onerror = function (msg) {
-            //viewer.error(msg);
+            console.error(msg);
         }
 
         geometry.load(data);
+    }
+
+
+    /**
+     * Import meshes into a scene.
+     * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param scene The scene to import into
+     * @param data The data to import
+     * @param rootUrl The root url for scene and resources
+     * @param meshes The meshes array to import into
+     * @param particleSystems The particle systems array to import into
+     * @param skeletons The skeletons array to import into
+     * @param onError The callback when import fails
+     * @returns True if successful or false otherwise
+     */
+    public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<IParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
+        this.loadModelGeometry(scene, data, (bimmesh: BimMesh) => {
+            if (meshes) {
+                meshes.push(bimmesh.mesh);
+            }
+        });
+
         return true;
     }
 
@@ -187,8 +185,17 @@ export class XbimFileLoader implements ISceneLoaderPlugin {
      * @returns The loaded asset container
      */
     public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
-        var container = new AssetContainer(scene);
-        this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+        // var container = new BimAssetContainer(scene);
+        // this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+        // container.removeAllFromScene();
+        // return container;
+
+        var container = new BimAssetContainer(scene);
+        this.loadModelGeometry(scene, data, (bimmesh: BimMesh) => {
+            container.meshes.push(bimmesh.mesh);
+            container.bimmesh = bimmesh;
+        });
+        
         container.removeAllFromScene();
         return container;
     }
